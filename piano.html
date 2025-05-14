@@ -21,19 +21,25 @@
     }
 
     .controls {
-      margin-bottom: 20px;
-    }
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 
     .controls button {
-      margin: 5px;
-      padding: 8px 16px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background-color: #4a90e2;
-      color: white;
-      cursor: pointer;
-    }
+  margin: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #4a90e2;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
 
     .controls button:hover {
       background-color: #357acc;
@@ -76,10 +82,13 @@
   </style>
 </head>
 <body>
-  <h1>🎵 Piano Player</h1>
+  <h1>🎹 Piano Player</h1>
   <div class="controls">
     <button onclick="playSong('twinkle')">Twinkle Twinkle</button>
     <button onclick="playSong('birthday')">Happy Birthday</button>
+    <button onclick="playSong('jingle')">Jingle Bells</button>
+    <button onclick="playSong('ode')">Ode to Joy</button>
+    <button onclick="playSong('mary')">Mary Had a Little Lamb</button>
   </div>
 
   <div class="piano">
@@ -117,7 +126,12 @@
       twinkle: ['C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4',
                 'F4', 'F4', 'E4', 'E4', 'D4', 'D4', 'C4'],
       birthday: ['C4', 'C4', 'D4', 'C4', 'F4', 'E4',
-                 'C4', 'C4', 'D4', 'C4', 'G4', 'F4']
+                 'C4', 'C4', 'D4', 'C4', 'G4', 'F4'],
+      jingle: ['E4', 'E4', 'E4', 'E4', 'E4', 'E4', 'E4', 'G4', 'C4', 'D4', 'E4'],
+      ode: ['E4', 'E4', 'F4', 'G4', 'G4', 'F4', 'E4', 'D4',
+            'C4', 'C4', 'D4', 'E4', 'E4', 'D4', 'D4'],
+      mary: ['E4', 'D4', 'C4', 'D4', 'E4', 'E4', 'E4',
+             'D4', 'D4', 'D4', 'E4', 'G4', 'G4']
     };
 
     function playSong(name) {
@@ -130,7 +144,7 @@
         }
         playNote(notes[i]);
         i++;
-      }, 400); // 400ms delay between notes
+      }, 400);
     }
   </script>
 </body>
