@@ -34,7 +34,7 @@
 
     .controls button {
       padding: 10px 20px;
-      font-size: arch: 0.3s, transform 0.1s, box-shadow 0.2s;
+      font-size: 16px;
       border: none;
       border-radius: 8px;
       background: linear-gradient(to bottom, #3498db, #2980b9);
@@ -52,23 +52,6 @@
     .controls button:active {
       transform: translateY(0);
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    .info-panel {
-      margin-bottom: 20px;
-      padding: 15px;
-      background: rgba(255,255,255,0.9);
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      text-align: center;
-      max-width: 600px;
-      width: 100%;
-    }
-
-    .info-panel p {
-      margin: 5px 0;
-      color: #2c3e50;
-      font-size: 1rem;
     }
 
     .piano {
@@ -157,7 +140,7 @@
       );
     }
 
-    .key.playing, .key.highlight {
+    .key.playing {
       background: linear-gradient(
         to bottom,
         #88bbee 0%,
@@ -171,7 +154,7 @@
         0 2px 5px rgba(0,0,0,0.3);
     }
 
-    .key.black.playing, .key.black.highlight {
+    .key.black.playing {
       background: linear-gradient(
         to bottom,
         #66aadd 0%,
@@ -213,9 +196,6 @@
       .label {
         font-size: 0.7rem;
       }
-      .info-panel p {
-        font-size: 0.9rem;
-      }
     }
 
     @media (max-width: 500px) {
@@ -235,19 +215,11 @@
         padding: 8px 12px;
         font-size: 14px;
       }
-      .info-panel p {
-        font-size: 0.8rem;
-      }
     }
   </style>
 </head>
 <body>
-  <h1>🎹 Educational Interactive Piano</h1>
-  <div class="info-panel" id="infoPanel">
-    <p id="noteInfo">Click a key to see its note name and position.</p>
-    <p id="chordInfo"></p>
-    <p id="eduTip">Tip: The piano keyboard repeats every octave (12 notes).</p>
-  </div>
+  <h1>🎹 Interactive Piano</h1>
   <div class="controls">
     <button onclick="playSong('twinkle')">Twinkle Twinkle</button>
     <button onclick="playSong('birthday')">Happy Birthday</button>
@@ -255,9 +227,6 @@
     <button onclick="playSong('ode')">Ode to Joy</button>
     <button onclick="playSong('mary')">Mary Had a Little Lamb</button>
     <button onclick="stopSong()">Stop</button>
-    <button onclick="startScalePractice('c_major')">C Major Scale</button>
-    <button onclick="startScalePractice('a_minor')">A Minor Scale</button>
-    <button onclick="startQuiz()">Note Quiz</button>
   </div>
 
   <div class="piano">
@@ -279,42 +248,6 @@
   <script>
     let synth = null;
     let isAudioInitialized = false;
-    let scaleMode = null;
-    let quizMode = false;
-    let currentQuizNote = null;
-
-    const notePositions = {
-      C4: 'Middle C',
-      'C#4': 'C# above Middle C',
-      D4: 'D above Middle C',
-      'D#4': 'D# above Middle C',
-      E4: 'E above Middle C',
-      F4: 'F above Middle C',
-      'F#4': 'F# above Middle C',
-      G4: 'G above Middle C',
-      'G#4': 'G# above Middle C',
-      A4: 'A above Middle C',
-      'A#4': 'A# above Middle C',
-      B4: 'B above Middle C',
-      C5: 'C (one octave above Middle C)'
-    };
-
-    const chords = {
-      C4: { name: 'C Major', notes: ['C4', 'E4', 'G4'] },
-      G4: { name: 'G Major', notes: ['G4', 'B4', 'D4'] },
-      F4: { name: 'F Major', notes: ['F4', 'A4', 'C5'] }
-    };
-
-    const scales = {
-      c_major: {
-        notes: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
-        tip: 'The C Major scale has no sharps or flats.'
-      },
-      a_minor: {
-        notes: ['A4', 'B4', 'C5', 'D4', 'E4', 'F4', 'G4', 'A4'],
-        tip: 'The A Minor scale is the relative minor of C Major.'
-      }
-    };
 
     function initializeAudio() {
       if (!isAudioInitialized) {
@@ -331,36 +264,44 @@
 
     function initializeSynth() {
       synth = new Tone.Synth({
-        oscillator: { type: 'triangle' },
-        envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }
+        oscillator: {
+          type: 'triangle' // Mimics a softer piano-like sound
+        },
+        envelope: {
+          attack: 0.005,
+          decay: 0.1,
+          sustain: 0.3,
+          release: 1
+        }
       }).toDestination();
       console.log('Synth initialized successfully');
     }
 
     const keys = document.querySelectorAll('.key');
     keys.forEach(key => {
-      key.addEventListener('click', () => handleKeyInteraction(key));
+      key.addEventListener('click', () => {
+        initializeAudio();
+        if (isAudioInitialized && synth) {
+          const note = key.getAttribute('data-note');
+          playNote(note);
+        }
+      });
       key.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        handleKeyInteraction(key);
+        initializeAudio();
+        if (isAudioInitialized && synth) {
+          const note = key.getAttribute('data-note');
+          playNote(note);
+        }
       });
     });
 
-    function handleKeyInteraction(key) {
-      initializeAudio();
-      if (isAudioInitialized && synth) {
-        const note = key.getAttribute('data-note');
-        if (quizMode) {
-          checkQuizAnswer(note);
-        } else {
-          playNote(note);
-          displayNoteInfo(note);
-          displayChordInfo(note);
-        }
-      }
-    }
-
     function playNote(note) {
+      if (!synth) {
+        console.error('Synth not initialized');
+        alert('Audio synth not ready. Please try again.');
+        return;
+      }
       try {
         console.log(`Playing note: ${note}`);
         synth.triggerAttackRelease(note, '8n');
@@ -372,74 +313,6 @@
       } catch (err) {
         console.error(`Error playing note ${note}:`, err);
         alert(`Error playing note ${note}. Check console for details.`);
-      }
-    }
-
-    function displayNoteInfo(note) {
-      const noteInfo = document.getElementById('noteInfo');
-      noteInfo.textContent = `Note: ${note} (${notePositions[note] || 'Unknown position'})`;
-    }
-
-    function displayChordInfo(note) {
-      const chordInfo = document.getElementById('chordInfo');
-      const chord = chords[note];
-      if (chord) {
-        chordInfo.textContent = `Chord: ${chord.name} (${chord.notes.join(', ')})`;
-        highlightChord(chord.notes);
-      } else {
-        chordInfo.textContent = 'No chord defined for this note.';
-        clearHighlights();
-      }
-    }
-
-    function highlightChord(notes) {
-      clearHighlights();
-      notes.forEach(note => {
-        const key = document.querySelector(`.key[data-note="${note}"]`);
-        if (key) key.classList.add('highlight');
-      });
-    }
-
-    function clearHighlights() {
-      document.querySelectorAll('.key.highlight').forEach(key => {
-        key.classList.remove('highlight');
-      });
-    }
-
-    function startScalePractice(scaleName) {
-      clearHighlights();
-      scaleMode = scaleName;
-      const scale = scales[scaleName];
-      if (scale) {
-        scale.notes.forEach(note => {
-          const key = document.querySelector(`.key[data-note="${note}"]`);
-          if (key) key.classList.add('highlight');
-        });
-        document.getElementById('eduTip').textContent = `Tip: ${scale.tip}`;
-        document.getElementById('noteInfo').textContent = `Practice the ${scaleName.replace('_', ' ')} scale!`;
-        document.getElementById('chordInfo').textContent = '';
-      }
-    }
-
-    function startQuiz() {
-      clearHighlights();
-      scaleMode = null;
-      quizMode = true;
-      const allNotes = Object.keys(notePositions);
-      currentQuizNote = allNotes[Math.floor(Math.random() * allNotes.length)];
-      document.getElementById('noteInfo').textContent = `Find and play the note: ${currentQuizNote}`;
-      document.getElementById('chordInfo').textContent = '';
-      document.getElementById('eduTip').textContent = 'Tip: Use the key labels to find the note!';
-    }
-
-    function checkQuizAnswer(note) {
-      const noteInfo = document.getElementById('noteInfo');
-      playNote(note);
-      if (note === currentQuizNote) {
-        noteInfo.textContent = `Correct! You played ${note}. Click "Note Quiz" for another note.`;
-        quizMode = false;
-      } else {
-        noteInfo.textContent = `Incorrect. Try again to find ${currentQuizNote}!`;
       }
     }
 
@@ -496,20 +369,9 @@
       initializeAudio();
       if (isAudioInitialized && synth) {
         stopSong();
-        clearHighlights();
-        scaleMode = null;
-        quizMode = false;
-        document.getElementById('noteInfo').textContent = `Playing ${name.replace('_', ' ')}`;
-        document.getElementById('chordInfo').textContent = '';
-        document.getElementById('eduTip').textContent = 'Tip: Listen to the notes to learn the melody!';
         let time = 0;
         songs[name].forEach(noteObj => {
-          const t = setTimeout(() => {
-            playNote(noteObj.note);
-            displayNoteInfo(noteObj.note);
-            displayChordInfo(noteObj.note);
-          }, time * 1000);
-physics: 0.3s;
+          const t = setTimeout(() => playNote(noteObj.note), time * 1000);
           timeouts.push(t);
           time += noteObj.dur;
         });
@@ -519,12 +381,6 @@ physics: 0.3s;
     function stopSong() {
       timeouts.forEach(clearTimeout);
       timeouts = [];
-      clearHighlights();
-      if (!quizMode) {
-        document.getElementById('noteInfo').textContent = 'Click a key to see its note name and position.';
-        document.getElementById('chordInfo').textContent = '';
-        document.getElementById('eduTip').textContent = 'Tip: The piano keyboard repeats every octave (12 notes).';
-      }
     }
   </script>
 </body>
